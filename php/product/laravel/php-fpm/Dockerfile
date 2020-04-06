@@ -10,12 +10,41 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories
 
 RUN apk --update add tar libevent-dev
 
+# Add a non-root user:
+ARG PUID=1000
+ENV PUID ${PUID}
+ARG PGID=1000
+ENV PGID ${PGID}
+
+# user
+RUN addgroup -g ${PGID} www-data && \
+    adduser -D -G www-data -u ${PUID} www-data
 
 # Install sockets package:
 ARG INSTALL_SOCKETS=true
 RUN if [ ${INSTALL_SOCKETS} = true ]; then \
 	docker-php-ext-install sockets \
 	&& docker-php-ext-enable --ini-name 0-sockets.ini sockets \
+;fi
+
+# Install ZipArchive:
+ARG INSTALL_ZIP_ARCHIVE=true
+RUN set -eux; \
+  if [ ${INSTALL_ZIP_ARCHIVE} = true ]; then \
+    apk --update add libzip-dev && \
+    if [ ${LARADOCK_PHP_VERSION} = "7.3" ] || [ ${LARADOCK_PHP_VERSION} = "7.4" ]; then \
+      docker-php-ext-configure zip; \
+    else \
+      docker-php-ext-configure zip --with-libzip; \
+    fi && \
+    # Install the zip extension
+    docker-php-ext-install zip \
+;fi
+
+#Install pdo_mysql package:
+ARG INSTALL_PDO_MYSQL=true
+RUN if [ ${INSTALL_PDO_MYSQL} = true ]; then \
+    docker-php-ext-install pdo_mysql \
 ;fi
 
 #Install GD package:
