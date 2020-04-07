@@ -8,7 +8,7 @@ ARG PHP_VERSION=7.3
 
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories
 
-RUN apk --update add tar libevent-dev
+RUN apk --update add tar libevent-dev supervisor
 
 # Add a non-root user:
 ARG PUID=1000
@@ -19,6 +19,8 @@ ENV PGID ${PGID}
 # user
 RUN addgroup -g ${PGID} www-data && \
     adduser -D -G www-data -u ${PUID} www-data
+
+RUN docker-php-ext-install mysqli mbstring pdo pdo_mysql tokenizer xml pcntl
 
 # Install sockets package:
 ARG INSTALL_SOCKETS=true
@@ -39,12 +41,6 @@ RUN set -eux; \
     fi && \
     # Install the zip extension
     docker-php-ext-install zip \
-;fi
-
-#Install pdo_mysql package:
-ARG INSTALL_PDO_MYSQL=true
-RUN if [ ${INSTALL_PDO_MYSQL} = true ]; then \
-    docker-php-ext-install pdo_mysql \
 ;fi
 
 #Install GD package:
@@ -114,6 +110,10 @@ RUN if [ ${INSTALL_SWOOLE} = true ]; then \
     && docker-php-ext-enable swoole \
 ;fi
 
+
+COPY supervisord.conf /etc/supervisord.conf
+
+ENTRYPOINT ["/usr/bin/supervisord", "-n", "-c",  "/etc/supervisord.conf"]
 
 #
 #--------------------------------------------------------------------------
