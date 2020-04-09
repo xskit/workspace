@@ -17,8 +17,8 @@ ARG PGID=1000
 ENV PGID ${PGID}
 
 # user
-RUN addgroup -g ${PGID} www-data && \
-    adduser -D -G www-data -u ${PUID} www-data
+RUN addgroup -g ${PGID} www && \
+    adduser -D -G www -u ${PUID} www
 
 RUN docker-php-ext-install mysqli mbstring pdo pdo_mysql tokenizer xml pcntl
 

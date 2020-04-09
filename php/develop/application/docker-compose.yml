@@ -2,9 +2,12 @@ version: '3'
 
 networks:
   frontend:
-    driver: bridge
+    external:
+      name: app_frontend
   backend:
-    driver: bridge
+    external:
+      name: app_backend
+
 services:
   mysql:
     image: mysql:5.7.29
